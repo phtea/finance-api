@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -16,13 +15,11 @@ import (
 func main() {
 
 	// Получаем конфигурацию из ENV
-    dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", 
-        os.Getenv("DB_USER"), 
-        os.Getenv("DB_PASSWORD"), 
-        os.Getenv("DB_HOST"), 
-        os.Getenv("DB_PORT"), 
-        os.Getenv("DB_NAME"), 
-        os.Getenv("DB_SSLMODE"))
+    dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("Database URL was not formed, perhaps check .env file")
+	}
+	fmt.Printf("dbURL: %v\n", dbURL)
 
     // Настройка пула соединений
     dbPool, err := pgxpool.Connect(context.Background(), dbURL)

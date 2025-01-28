@@ -2,22 +2,15 @@ package service
 
 import (
 	"finance-api/internal/model"
+	"finance-api/internal/repository"
 	"fmt"
 )
 
-type UserRepository interface {
-    CreateUser(balance float64) (*model.User, error)
-    GetUserByID(userID int) (*model.User, error)  // Добавляем метод для получения пользователя по ID
-    UpdateUser(user *model.User) error            // Добавляем метод для обновления пользователя
-	TransferBalance(fromUserID, toUserID int, amount float64) (*model.User, *model.User, error)
-	TransferMoney(fromUserID, toUserID int, amount float64) error // Добавляем новый метод
-}
-
 type UserService struct {
-    Repo UserRepository
+    Repo repository.UserRepository
 }
 
-func NewUserService(repo UserRepository) *UserService {
+func NewUserService(repo repository.UserRepository) *UserService {
     return &UserService{Repo: repo}
 }
 

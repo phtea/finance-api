@@ -1,32 +1,36 @@
-# Используем golang image для сборки приложения
+# Builder stage
 FROM golang:1.22-alpine AS builder
 
-# Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
 
-# Копируем файлы go.mod и go.sum для управления зависимостями
+# Copy go.mod and go.sum first for better cache
 COPY go.mod go.sum ./
 
-# Скачиваем зависимости
+# Install dependencies
 RUN go mod tidy
 
-# Копируем весь код приложения
-COPY . .
+# Copy the rest of the source code
+COPY . ./
 
-# Строим приложение
+# Install goose
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
+# Build the main application binary
 RUN go build -o main cmd/main/main.go
 
-# Используем легкий образ Alpine для финального контейнера
+# Final stage (runtime)
 FROM alpine:latest
 
-# Устанавливаем необходимые для работы библиотеки
+# Install necessary certificates and dependencies
 RUN apk --no-cache add ca-certificates
 
-# Копируем скомпилированное приложение из стадии сборки
+# Copy the built binary and goose from the builder image
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
 COPY --from=builder /app/main /main
+COPY --from=builder /app/migrations /migrations
 
-# Делаем приложение исполнимым
+# Make the binary executable
 RUN chmod +x /main
 
-# Запускаем приложение
+# Define the entry point
 CMD ["/main"]
